@@ -1,5 +1,9 @@
 # RandomPokePicker
 A simple pokemon randomizer to display it on your stream
+It will use a Websocket host locally and the [pokeAPI](https://pokeapi.co/) to get the sprite of the pokemon
+
+In order to use it just run the server2 and open a tab in your browser with this URL : (http://localhost:8080/request-pokemon)
+
 
 This project can be used by anyone who want to implemant it or upgrade it.
 

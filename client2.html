@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voici ton POKEMON ♥</title>
+    <style>
+        title {
+            color : white
+        }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f000;
+            margin: 0;
+            padding: 20px;
+        }
+        #messages {
+            color: white;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ffffff00;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        img {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- <h1>Voici ton POKEMON ♥</h1> -->
+    <div id="messages"></div>
+    <!-- <button onclick="requestPokemon()">Request Pokémon</button>   -->
+
+    <script>
+        const websocket = new WebSocket('ws://localhost:8765/');
+
+        websocket.onopen = function() {
+            console.log('Connexion établie');
+        };
+
+        websocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+
+            if (data.error) {
+                const errorMessage = document.createElement('div');
+                errorMessage.textContent = data.error;
+                messagesDiv.appendChild(errorMessage);
+            } else {
+                const name = document.createElement('div');
+                name.textContent = `${data.name}`;
+                messagesDiv.appendChild(name);
+
+                // const height = document.createElement('div');
+                // height.textContent = `Taille : ${data.height}`;
+                // messagesDiv.appendChild(height);
+
+                // const weight = document.createElement('div');
+                // weight.textContent = `Poids : ${data.weight}`;
+                // messagesDiv.appendChild(weight);
+
+                if (data.sprite_url) {
+                    const sprite = document.createElement('img');
+                    sprite.src = data.sprite_url;
+                    messagesDiv.appendChild(sprite);
+                }
+            }
+        };
+
+        function requestPokemon() {
+            fetch('http://localhost:8080/request-pokemon')
+                .then(response => response.text())
+                .then(data => console.log(data));
+        }
+    </script>
+</body>
+</html>

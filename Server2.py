@@ -17,13 +17,16 @@ async def handle_websocket(websocket, path):
         connected_clients.remove(websocket)
 
 async def handle_request():
-    while True:
+    while True:   
         message = await message_queue.get()
-
-        pokemon_id = random.randint(1, 898)
+        
+        if isinstance(message, dict) and 'pokemon_id' in message:
+            pokemon_id = message['pokemon_id']
+        else:
+            pokemon_id = random.randint(1, 898)
         url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_id}"
-
-        response = requests.get(url)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
         if response.status_code == 200:
             pokemon_data = response.json()
             name = pokemon_data['name']
@@ -51,8 +54,14 @@ async def handle_request():
         message_queue.task_done()
 
 async def handle_http_request(request):
-    await message_queue.put("request")
-    return web.Response(text="Pokémon demandé avec succès")
+    pokemon_id=request.query.get('pokemon_id')
+    if pokemon_id is not None:
+        try:
+            pokemon_id=int(pokemon_id)
+        except ValueError:
+            return web.Response(text="Invalid Pokemon ID", status=400)
+        await message_queue.put({"pokemon_id": pokemon_id})
+    return web.Response(text="Pokemon request successfully received")
 
 async def main():
     websocket_server = websockets.serve(handle_websocket, "localhost", 8765)
@@ -65,5 +74,4 @@ async def main():
 
     await asyncio.gather(websocket_server, http_server.start(), handle_request())
 
-asyncio.get_event_loop().run_until_complete(main())
-asyncio.get_event_loop().run_forever()
+asyncio.run(main())
